@@ -93,11 +93,36 @@ export default function Paso4Page() {
           });
           router.push("/login");
         } else {
-          Swal.fire({
-            icon: "error",
-            title: "Error al agendar",
-            text: result.error || "No se pudo crear la cita. Intenta nuevamente.",
+          // Verificar si es un error de timeout/verificación
+          const esProblemaServidor = result.error?.includes("verifica en 'Mis Citas'");
+          
+          await Swal.fire({
+            icon: esProblemaServidor ? "warning" : "error",
+            title: esProblemaServidor ? "Procesando..." : "Error al agendar",
+            html: esProblemaServidor 
+              ? `
+                <div class="text-left">
+                  <p class="mb-3">${result.error}</p>
+                  <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 text-sm">
+                    <p class="font-semibold mb-2">⚠️ Importante:</p>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700">
+                      <li>NO vuelvas a agendar hasta verificar</li>
+                      <li>La cita puede estar creándose</li>
+                      <li>Revisa tu correo en unos minutos</li>
+                    </ul>
+                  </div>
+                </div>
+              `
+              : result.error || "No se pudo crear la cita. Intenta nuevamente.",
+            confirmButtonText: esProblemaServidor ? "Ir a Mis Citas" : "Entendido",
+            showCancelButton: esProblemaServidor,
+            cancelButtonText: "Cerrar",
             confirmButtonColor: "#52a2b2",
+            cancelButtonColor: "#6b7280",
+          }).then((swalResult) => {
+            if (esProblemaServidor && swalResult.isConfirmed) {
+              router.push("/dashboard");
+            }
           });
         }
       }

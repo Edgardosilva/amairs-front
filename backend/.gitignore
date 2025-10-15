@@ -1,0 +1,26 @@
+# Node modules (se vuelven a instalar con npm install)
+node_modules/
+
+# Entornos
+.env
+
+# Logs
+logs/
+*.log
+
+# Archivos de error y debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Directorios temporales y de producción
+dist/
+build/
+tmp/
+
+# Cobertura de tests
+coverage/
+
+# Archivos del sistema (por si acaso)
+.DS_Store
+Thumbs.db

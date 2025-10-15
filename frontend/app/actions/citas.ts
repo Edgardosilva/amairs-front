@@ -86,9 +86,9 @@ export async function crearCita(formData: FormData): Promise<CrearCitaResponse> 
 
     // Preparar datos en el formato que espera tu API
     const appointmentData = {
-      usuarioId: usuarioId, // ✅ Usar el usuarioId obtenido del endpoint de autenticación
+      usuarioId: usuarioId,
       procedimiento_id: formData.procedimiento.id,
-      fecha: formData.fecha, // Ya viene en formato YYYY-MM-DD
+      fecha: formData.fecha,
       hora: formData.hora,
       horaTermino: horaTermino,
       paciente_atendido: `${formData.nombre} ${formData.apellido}`,
@@ -98,22 +98,69 @@ export async function crearCita(formData: FormData): Promise<CrearCitaResponse> 
       estado: "Pendiente",
     };
 
-    // Hacer POST a tu API - sin timeout para permitir que el correo se envíe completamente
-    const response = await fetch(
-      "https://amaris-api-production.up.railway.app/appointments",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Cookie": `access_token=${token}`,
-        },
-        body: JSON.stringify(appointmentData),
+    console.log("📤 [CITAS] Enviando datos:", JSON.stringify(appointmentData, null, 2));
+
+    // Hacer POST con timeout de 90 segundos (menos que los 120 del backend)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90000);
+
+    let response;
+    try {
+      response = await fetch(
+        "https://amaris-api-production.up.railway.app/appointments",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Cookie": `access_token=${token}`,
+          },
+          body: JSON.stringify(appointmentData),
+          signal: controller.signal,
+        }
+      );
+      clearTimeout(timeoutId);
+      console.log("📥 [CITAS] Response status:", response.status);
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId);
+      
+      if (fetchError.name === 'AbortError') {
+        console.warn("⏱️ [CITAS] Timeout - Backend tardó más de 90 segundos");
+        
+        // El backend está procesando, dar un mensaje al usuario
+        return {
+          success: false,
+          error: "El servidor está tardando demasiado. Esto puede deberse al envío del correo. Por favor, verifica en 'Mis Citas' en unos minutos si tu reserva se registró.",
+        };
       }
-    );
+      
+      // Otros errores de red (ECONNRESET, etc)
+      console.error("❌ [CITAS] Error de red:", fetchError.code, fetchError.message);
+      return {
+        success: false,
+        error: "Problema de conexión con el servidor. Por favor, verifica en 'Mis Citas' si tu reserva se registró antes de intentar nuevamente.",
+      };
+    }
 
     // Manejo de errores HTTP
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      // Intentar obtener el error del backend
+      let errorData;
+      const contentType = response.headers.get("content-type");
+      
+      try {
+        if (contentType?.includes("application/json")) {
+          errorData = await response.json();
+        } else {
+          const textError = await response.text();
+          errorData = { message: textError };
+          console.error("❌ [CITAS] Error HTML/texto del backend:", textError.substring(0, 500));
+        }
+      } catch (e) {
+        errorData = { message: `Error ${response.status} del servidor` };
+      }
+
+      console.error("❌ [CITAS] Error completo:", errorData);
+      
       return {
         success: false,
         error: errorData.message || errorData.error || `Error ${response.status}: No se pudo crear la cita`,
@@ -122,6 +169,7 @@ export async function crearCita(formData: FormData): Promise<CrearCitaResponse> 
 
     // Parsear respuesta exitosa
     const result = await response.json();
+    console.log("✅ [CITAS] Cita creada:", result);
 
     return {
       success: true,
