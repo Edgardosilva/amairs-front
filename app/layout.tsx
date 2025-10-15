@@ -1,0 +1,34 @@
+import type React from "react"
+import type { Metadata } from "next"
+import { GeistSans } from "geist/font/sans"
+import { GeistMono } from "geist/font/mono"
+import { Analytics } from "@vercel/analytics/next"
+import { Suspense } from "react"
+import { Navigation } from "@/components/navigation"
+import { Footer } from "@/components/footer"
+import "./globals.css"
+
+export const metadata: Metadata = {
+  title: "Amaris - Centro de Kinesiología Estética",
+  description: "Centro especializado en kinesiología estética y tratamientos de bienestar",
+  generator: "v0.app",
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  return (
+    <html lang="es">
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
+        <Navigation />
+        <main className="min-h-screen pt-16 md:pt-20">
+          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        </main>
+        <Footer />
+        <Analytics />
+      </body>
+    </html>
+  )
+}
