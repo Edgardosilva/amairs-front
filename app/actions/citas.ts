@@ -98,7 +98,7 @@ export async function crearCita(formData: FormData): Promise<CrearCitaResponse> 
       estado: "Pendiente",
     };
 
-    // Hacer POST a tu API
+    // Hacer POST a tu API - sin timeout para permitir que el correo se envíe completamente
     const response = await fetch(
       "https://amaris-api-production.up.railway.app/appointments",
       {
@@ -111,26 +111,37 @@ export async function crearCita(formData: FormData): Promise<CrearCitaResponse> 
       }
     );
 
+    // Manejo de errores HTTP
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       return {
         success: false,
-        error: errorData.message || `Error ${response.status}: No se pudo crear la cita`,
+        error: errorData.message || errorData.error || `Error ${response.status}: No se pudo crear la cita`,
       };
     }
 
+    // Parsear respuesta exitosa
     const result = await response.json();
 
     return {
       success: true,
-      message: result.message || "Cita agendada exitosamente",
+      message: result.message || "¡Cita agendada exitosamente! Recibirás un correo de confirmación pronto.",
       appointmentId: result.appointmentId || result.id,
     };
   } catch (error) {
     console.error("Error al crear cita:", error);
+    
+    // Errores de red o conectividad
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: "No se pudo conectar con el servidor. Verifica tu conexión a internet.",
+      };
+    }
+    
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Error al conectar con el servidor",
+      error: error instanceof Error ? error.message : "Error inesperado al procesar la cita",
     };
   }
 }

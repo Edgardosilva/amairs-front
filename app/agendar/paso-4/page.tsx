@@ -49,20 +49,38 @@ export default function Paso4Page() {
       const result = await crearCita(formData);
 
       if (result.success) {
+        const citaInfo = `
+          <div class="text-left space-y-3 mt-4">
+            <p class="text-base mb-4">${result.message}</p>
+            <div class="bg-gray-50 p-4 rounded-lg space-y-2 text-sm">
+              <p><strong>📅 Fecha:</strong> ${fechaFormateada}</p>
+              <p><strong>🕐 Hora:</strong> ${formData.hora}</p>
+              <p><strong>💆 Servicio:</strong> ${formData.procedimiento?.nombre}</p>
+            </div>
+            <p class="text-xs text-gray-500 mt-4">
+              💌 Revisa tu correo <strong>${formData.correo}</strong> para confirmar tu cita
+            </p>
+            ${result.appointmentId ? `<p class="text-xs text-gray-400 mt-2">ID: ${result.appointmentId}</p>` : ""}
+          </div>
+        `;
+
         await Swal.fire({
           icon: "success",
-          title: "¡Cita Agendada!",
-          html: `
-            <p>${result.message}</p>
-            ${result.appointmentId ? `<p class="text-sm text-gray-500 mt-2">ID: ${result.appointmentId}</p>` : ""}
-          `,
-          confirmButtonText: "Entendido",
+          title: "¡Cita Agendada Exitosamente!",
+          html: citaInfo,
+          confirmButtonText: "Ver Mis Citas",
+          showCancelButton: true,
+          cancelButtonText: "Ir al Inicio",
           confirmButtonColor: "#52a2b2",
+          cancelButtonColor: "#a6d230",
+        }).then((result) => {
+          resetForm();
+          if (result.isConfirmed) {
+            router.push("/dashboard");
+          } else {
+            router.push("/");
+          }
         });
-
-        // Resetear formulario y volver al inicio
-        resetForm();
-        router.push("/");
       } else {
         // Verificar si es un error de autenticación
         if (result.error?.includes("iniciar sesión") || result.error?.includes("autenticación")) {
@@ -252,24 +270,36 @@ export default function Paso4Page() {
             >
               Volver
             </Button>
-            <Button
-              onClick={handleConfirmar}
-              disabled={isPending}
-              size="lg"
-              className="w-full sm:w-auto bg-[#a6d230] hover:bg-[#95bb2a] text-white px-8 font-semibold shadow-lg hover:shadow-xl transition-all"
-            >
-              {isPending ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Confirmando...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-5 h-5 mr-2" />
-                  Confirmar Cita
-                </>
+            <div className="w-full sm:w-auto flex flex-col items-end gap-2">
+              {isPending && (
+                <div className="text-right space-y-1">
+                  <p className="text-sm text-[#52a2b2] font-medium animate-pulse">
+                    ⏳ Procesando tu cita...
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Enviando correo de confirmación (puede tardar unos segundos)
+                  </p>
+                </div>
               )}
-            </Button>
+              <Button
+                onClick={handleConfirmar}
+                disabled={isPending}
+                size="lg"
+                className="w-full sm:w-auto bg-[#a6d230] hover:bg-[#95bb2a] text-white px-8 font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-70"
+              >
+                {isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Confirmando...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 mr-2" />
+                    Confirmar Cita
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
