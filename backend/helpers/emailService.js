@@ -4,15 +4,17 @@ dotenv.config();
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // SSL
+    port: 587,
+    secure: false, // STARTTLS
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
     },
     tls: {
-      rejectUnauthorized: true
-    }
+      rejectUnauthorized: false
+    },
+    connectionTimeout: 10000, // 10 segundos
+    greetingTimeout: 10000
   });
   
 export const sendConfirmationEmail = async (email, token) => {
@@ -34,5 +36,17 @@ export const sendConfirmationEmail = async (email, token) => {
       `
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    console.log(`📧 Intentando enviar email a ${email}...`);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`✅ Email enviado exitosamente: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`❌ Error detallado al enviar email:`, {
+      code: error.code,
+      command: error.command,
+      message: error.message
+    });
+    throw error;
+  }
 };
