@@ -1,6 +1,3 @@
-// ProceduresController.js
-
-// Datos de ejemplo (puedes reemplazarlos con datos reales o traerlos de una base de datos en el futuro)
 export const procedures = [
     { id: 1, name: "Limpieza facial básica", duration: 45 },
     { id: 2, name: "Limpieza facial premium", duration: 90 },
@@ -15,12 +12,10 @@ export const procedures = [
     { id: 11, name: "Entrenamiento funcional 50 min", duration: 60 },
 ];
 
-// Controlador para obtener todos los procedimientos
 export const getAllProcedures = (req, res) => {
     res.json(procedures);
 };
 
-// Controlador para obtener un procedimiento por ID
 export const getProcedureById = (req, res) => {
     const procedure = procedures.find(p => p.id === parseInt(req.params.id));
     if (procedure) {
@@ -30,10 +25,9 @@ export const getProcedureById = (req, res) => {
     }
 };
 
-// Controlador para crear un nuevo procedimiento (para fines de ejemplo)
 export const createProcedure = (req, res) => {
     const newProcedure = {
-        id: procedures.length + 1, // Generar un ID nuevo basado en la longitud del array (solo para ejemplo)
+        id: procedures.length + 1, 
         name: req.body.name,
         duration: req.body.duration
     };

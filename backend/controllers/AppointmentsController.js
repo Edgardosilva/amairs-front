@@ -1,14 +1,10 @@
 import { verificarDisponibilidad } from '../helpers/verificarDisponibilidad.js';
 import { verificarBox } from '../helpers/verificarBox.js';
-import { sendConfirmationEmail } from '../helpers/emailService.js'; // Ajusta el path si es necesario
+import { sendConfirmationEmail } from '../helpers/emailService.js';
 import db from '../database.js';
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
 
-
-
-// Datos de ejemplo para citas (puedes reemplazarlos con datos reales o traerlos de una base de datos)
-// export const appointments = [];
 
 // Controlador para obtener todas las citas
 export const getAllAppointments = async (req, res) => {
@@ -29,30 +25,30 @@ export const getAllAppointments = async (req, res) => {
 
     // Procesa citas asegurando que los datos sean válidos
     const appointments = rows
-      .filter(appt => appt.fecha && appt.hora) // Filtra registros inválidos
+      .filter(appt => appt.fecha && appt.hora) 
       .map(appt => {
         try {
-          const fechaISO = new Date(appt.fecha).toISOString().split("T")[0]; // Convierte fecha a 'YYYY-MM-DD'
-          const dateTimeString = `${fechaISO}T${appt.hora}`; // Formato completo de fecha y hora
+          const fechaISO = new Date(appt.fecha).toISOString().split("T")[0];
+          const dateTimeString = `${fechaISO}T${appt.hora}`;
           const startDate = new Date(dateTimeString);
 
           if (isNaN(startDate.getTime())) {
             console.error(`Fecha inválida en ID ${appt.id}:`, appt.fecha, appt.hora);
-            return null; // Ignorar registros con fechas incorrectas
+            return null; 
           }
 
           return {
             id: appt.id,
             title: `${appt.procedimiento} - ${appt.paciente}`,
             start: startDate,
-            state: appt.estado // Convierte a formato ISO
+            state: appt.estado
           };
         } catch (error) {
           console.error(`Error procesando cita ID ${appt.id}:`, error);
           return null;
         }
       })
-      .filter(appt => appt !== null); // Elimina valores inválidos
+      .filter(appt => appt !== null); 
 
     res.json(appointments);
   } catch (error) {
@@ -82,9 +78,7 @@ export const getAvailableAppointments = async (req, res) => {
       WHERE fecha = ?
     `;
     const [occupiedSchedules] = await db.execute(query, [selectedDate]);
-
-    // Define rango de horarios posibles (por ejemplo, de 09:00 a 18:00)
-    const allTimes = generateTimeSlots("09:00", "18:00", 15); // Genera intervalos de 15 minutos
+    const allTimes = generateTimeSlots("09:00", "18:00", 15); 
     const availableTimes = allTimes.filter((time) =>
       !isTimeOccupied(time, occupiedSchedules)
     );
@@ -103,7 +97,7 @@ const generateTimeSlots = (start, end, interval) => {
   const endTime = new Date(`1970-01-01T${end}:00`);
 
   while (current <= endTime) {
-    times.push(current.toTimeString().slice(0, 5)); // Formato HH:MM
+    times.push(current.toTimeString().slice(0, 5)); 
     current.setMinutes(current.getMinutes() + interval);
   }
 

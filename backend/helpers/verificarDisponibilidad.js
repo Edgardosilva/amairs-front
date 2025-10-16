@@ -5,7 +5,7 @@ export const verificarDisponibilidad = async (fecha, hora, horaTermino, concurre
 
     if (!concurrentSessions) {
     console.error("ConcurrentSessions no recibido correctamente.");
-    return false; // Bloquea si el valor es inválido
+    return false;
     }
     
     const querySolapamientos = `
@@ -20,7 +20,7 @@ export const verificarDisponibilidad = async (fecha, hora, horaTermino, concurre
     if (concurrentSessions === 1) {
       const hayConflicto = solapados.some(cita => cita.concurrent_sessions === 1);
       if (hayConflicto) {
-        return null; // No se puede agendar porque ya hay un procedimiento exclusivo
+        return null; 
       }
     }
   
@@ -32,11 +32,11 @@ export const verificarDisponibilidad = async (fecha, hora, horaTermino, concurre
       );
 
       if (sesionesEnMismoBoxActuales + concurrentSessions > 3) {
-        return null; // Excede el límite de sesiones concurrentes en el mismo box
+        return null;
       }
     }
-
-    return true; // Retorna el box asignado
+    
+    return true; 
   } catch (error) {
     console.error("Error verificando disponibilidad:", error);
     throw new Error("Error al verificar disponibilidad.");

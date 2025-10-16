@@ -2,6 +2,8 @@
 
 Sistema completo de gestión de citas para Amaris, desarrollado con Next.js 15 y Node.js/Express.
 
+> 📖 **Para instrucciones detalladas de despliegue en Railway**, consulta [RAILWAY_DEPLOY.md](./RAILWAY_DEPLOY.md)
+
 ## 📁 Estructura del Proyecto
 
 ```
