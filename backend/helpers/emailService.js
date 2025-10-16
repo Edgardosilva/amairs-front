@@ -11,8 +11,8 @@ const transporter = nodemailer.createTransport({
   });
   
 export const sendConfirmationEmail = async (email, token) => {
-  const API_URL = process.env.API_URL || 'https://amaris-api-production.up.railway.app';
-  const link = `${API_URL}/appointments/confirmar-cita/${token}`;
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
+  const link = `${FRONTEND_URL}/confirmar-cita/${token}`;
   const mailOptions = {
     from: `"Amaris Estética" <${process.env.EMAIL_USER}>`,
     to: email,
