@@ -3,16 +3,28 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // STARTTLS
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
-    }
+    },
+    tls: {
+      rejectUnauthorized: false
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000
   });
   
 export const sendConfirmationEmail = async (email, token) => {
   const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
   const link = `${FRONTEND_URL}/confirmar-cita/${token}`;
+  
+  console.log(`📧 Preparando email para: ${email}`);
+  console.log(`🔗 Link de confirmación: ${link}`);
+  console.log(`📤 Configuración SMTP: smtp.gmail.com:587`);
+  
   const mailOptions = {
     from: `"Amaris Estética" <${process.env.EMAIL_USER}>`,
     to: email,
@@ -29,5 +41,21 @@ export const sendConfirmationEmail = async (email, token) => {
       `
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    console.log(`🚀 Enviando email...`);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`✅ Email enviado exitosamente!`);
+    console.log(`📨 Message ID: ${info.messageId}`);
+    console.log(`📬 Response: ${info.response}`);
+    return info;
+  } catch (error) {
+    console.error(`❌ ERROR al enviar email:`, {
+      code: error.code,
+      command: error.command,
+      response: error.response,
+      message: error.message,
+      stack: error.stack
+    });
+    throw error;
+  }
 };
