@@ -3,8 +3,6 @@ import db from '../database.js';
 export const verificarDisponibilidad = async (fecha, hora, horaTermino, concurrentSessions) => {
   try {
 
-    console.log(`Verificando disponibilidad proc c, en verificarDispo = ${concurrentSessions}`);
-
     if (!concurrentSessions) {
     console.error("ConcurrentSessions no recibido correctamente.");
     return false; // Bloquea si el valor es inválido
@@ -22,7 +20,6 @@ export const verificarDisponibilidad = async (fecha, hora, horaTermino, concurre
     if (concurrentSessions === 1) {
       const hayConflicto = solapados.some(cita => cita.concurrent_sessions === 1);
       if (hayConflicto) {
-        console.log('Ya hay un procedimiento exclusivo en ese horario');
         return null; // No se puede agendar porque ya hay un procedimiento exclusivo
       }
     }
@@ -35,7 +32,6 @@ export const verificarDisponibilidad = async (fecha, hora, horaTermino, concurre
       );
 
       if (sesionesEnMismoBoxActuales + concurrentSessions > 3) {
-        console.log("Excede el límite de sesiones concurrentes en el mismo box");
         return null; // Excede el límite de sesiones concurrentes en el mismo box
       }
     }

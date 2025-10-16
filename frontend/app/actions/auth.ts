@@ -3,13 +3,15 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://amaris-api-production.up.railway.app';
+
 export async function loginAction(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   
   try {
     const response = await fetch(
-      "https://amaris-api-production.up.railway.app/login",
+      `${API_URL}/login`,
       {
         method: "POST",
         credentials: "include",
@@ -98,7 +100,7 @@ export async function registerAction(formData: FormData) {
 
   try {
     const response = await fetch(
-      "https://amaris-api-production.up.railway.app/login/register",
+      `${API_URL}/login/register`,
       {
         method: "POST",
         headers: {

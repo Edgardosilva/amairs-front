@@ -99,7 +99,7 @@ export default function DashboardPage() {
                 Mis Citas
               </h1>
               <p className="text-gray-600">
-                Bienvenido, {user?.nombre} {user?.apellido}
+                Bienvenido{user?.nombre ? `, ${user.nombre} ${user.apellido}` : ''}
               </p>
             </div>
             <Button
@@ -166,11 +166,22 @@ export default function DashboardPage() {
 
                 {/* Procedimiento */}
                 <h3 className="text-lg font-bold text-[#52a2b2] mb-4">
-                  {appointment.procedimiento?.nombre || "Procedimiento"}
+                  {appointment.nombre_procedimiento}
                 </h3>
 
                 {/* Detalles */}
                 <div className="space-y-3">
+                  {/* Paciente */}
+                  <div className="flex items-start gap-3">
+                    <User className="w-5 h-5 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-gray-500">Paciente</p>
+                      <p className="font-medium text-gray-700">
+                        {appointment.paciente_atendido}
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Fecha */}
                   <div className="flex items-start gap-3">
                     <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
@@ -188,7 +199,7 @@ export default function DashboardPage() {
                     <div>
                       <p className="text-sm text-gray-500">Horario</p>
                       <p className="font-medium text-gray-700">
-                        {appointment.hora} - {appointment.horaTermino}
+                        {appointment.hora.slice(0, 5)} - {appointment.horaTermino.slice(0, 5)} hrs
                         <span className="text-gray-500 text-sm ml-2">
                           ({appointment.duracion} min)
                         </span>
@@ -201,33 +212,10 @@ export default function DashboardPage() {
                     <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
                     <div>
                       <p className="text-sm text-gray-500">Ubicación</p>
-                      <p className="font-medium text-gray-700">{appointment.box}</p>
-                    </div>
-                  </div>
-
-                  {/* Paciente */}
-                  <div className="flex items-start gap-3">
-                    <User className="w-5 h-5 text-gray-400 mt-0.5" />
-                    <div>
-                      <p className="text-sm text-gray-500">Paciente</p>
-                      <p className="font-medium text-gray-700">
-                        {appointment.paciente_atendido}
-                      </p>
+                      <p className="font-medium text-gray-700">Box {appointment.box}</p>
                     </div>
                   </div>
                 </div>
-
-                {/* Precio (si está disponible) */}
-                {appointment.procedimiento?.precio && (
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Precio</span>
-                      <span className="text-lg font-bold text-[#52a2b2]">
-                        ${appointment.procedimiento.precio.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                )}
               </div>
             ))}
           </div>

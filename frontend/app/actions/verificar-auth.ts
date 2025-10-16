@@ -2,6 +2,8 @@
 
 import { cookies } from "next/headers";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://amaris-api-production.up.railway.app';
+
 interface VerificarAuthResponse {
   isAuthenticated: boolean;
   userId?: string;
@@ -18,7 +20,7 @@ export async function verificarAuth(): Promise<VerificarAuthResponse> {
 
     // Verificar el token con el backend usando tu endpoint existente
     const response = await fetch(
-      "https://amaris-api-production.up.railway.app/login/auth/me",
+      `${API_URL}/login/auth/me`,
       {
         method: "GET",
         headers: {
@@ -56,7 +58,7 @@ export async function obtenerUsuarioActual(): Promise<string | null> {
 
     // Obtener usuario actual usando tu endpoint existente
     const response = await fetch(
-      "https://amaris-api-production.up.railway.app/login/auth/me",
+      `${API_URL}/login/auth/me`,
       {
         method: "GET",
         headers: {

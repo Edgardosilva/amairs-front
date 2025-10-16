@@ -2,22 +2,19 @@
 
 import { cookies } from "next/headers";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://amaris-api-production.up.railway.app';
+
 export interface Appointment {
   id: string;
   fecha: string;
   hora: string;
   horaTermino: string;
   paciente_atendido: string;
-  procedimiento_id: string;
-  procedimiento?: {
-    id: string;
-    nombre: string;
-    duracion: number;
-    precio: number;
-  };
+  nombre_procedimiento: string;
   estado: string;
   box: string;
   duracion: number;
+  solicitante?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -43,7 +40,7 @@ export async function getUserAppointments(): Promise<GetAppointmentsResponse> {
 
     // Hacer GET al endpoint
     const response = await fetch(
-      "https://amaris-api-production.up.railway.app/appointments/getUserAppointments",
+      `${API_URL}/appointments/getUserAppointments`,
       {
         method: "GET",
         headers: {

@@ -3,6 +3,8 @@
 import { cookies } from "next/headers";
 import type { FormData } from "@/types";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://amaris-api-production.up.railway.app';
+
 interface CrearCitaResponse {
   success: boolean;
   message?: string;
@@ -25,7 +27,7 @@ export async function crearCita(formData: FormData): Promise<CrearCitaResponse> 
 
     // Verificar autenticación con el endpoint existente
     const authResponse = await fetch(
-      "https://amaris-api-production.up.railway.app/login/auth/me",
+      `${API_URL}/login/auth/me`,
       {
         method: "GET",
         headers: {
@@ -100,46 +102,18 @@ export async function crearCita(formData: FormData): Promise<CrearCitaResponse> 
 
     console.log("📤 [CITAS] Enviando datos:", JSON.stringify(appointmentData, null, 2));
 
-    // Hacer POST con timeout de 90 segundos (menos que los 120 del backend)
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 90000);
-
-    let response;
-    try {
-      response = await fetch(
-        "https://amaris-api-production.up.railway.app/appointments",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Cookie": `access_token=${token}`,
-          },
-          body: JSON.stringify(appointmentData),
-          signal: controller.signal,
-        }
-      );
-      clearTimeout(timeoutId);
-      console.log("📥 [CITAS] Response status:", response.status);
-    } catch (fetchError: any) {
-      clearTimeout(timeoutId);
-      
-      if (fetchError.name === 'AbortError') {
-        console.warn("⏱️ [CITAS] Timeout - Backend tardó más de 90 segundos");
-        
-        // El backend está procesando, dar un mensaje al usuario
-        return {
-          success: false,
-          error: "El servidor está tardando demasiado. Esto puede deberse al envío del correo. Por favor, verifica en 'Mis Citas' en unos minutos si tu reserva se registró.",
-        };
+    // Hacer POST a tu API - sin timeout para permitir que el correo se envíe completamente
+    const response = await fetch(
+      `${API_URL}/appointments`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Cookie": `access_token=${token}`,
+        },
+        body: JSON.stringify(appointmentData),
       }
-      
-      // Otros errores de red (ECONNRESET, etc)
-      console.error("❌ [CITAS] Error de red:", fetchError.code, fetchError.message);
-      return {
-        success: false,
-        error: "Problema de conexión con el servidor. Por favor, verifica en 'Mis Citas' si tu reserva se registró antes de intentar nuevamente.",
-      };
-    }
+    );
 
     // Manejo de errores HTTP
     if (!response.ok) {

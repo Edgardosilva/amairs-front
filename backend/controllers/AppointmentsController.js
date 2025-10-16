@@ -27,10 +27,7 @@ export const getAllAppointments = async (req, res) => {
       JOIN usuarios_registrados ur ON ca.usuario_id = ur.id
     `);
 
-    // 🔹 Verifica qué datos devuelve la BD
-    console.log("Datos crudos de la BD:", rows);
-
-    // 🔹 Procesa citas asegurando que los datos sean válidos
+    // Procesa citas asegurando que los datos sean válidos
     const appointments = rows
       .filter(appt => appt.fecha && appt.hora) // Filtra registros inválidos
       .map(appt => {
@@ -245,20 +242,23 @@ export const getUserAppointments = async (req, res) => {
     const query = `
         SELECT
           ca.id,
-          pd.nombre AS procedimiento,
-          ur.nombre AS solicitante,
-          ca.paciente_atendido AS paciente,
-          ca.hora,
           ca.fecha,
-          ca.estado
+          ca.hora,
+          ca.horaTermino,
+          ca.duracion,
+          ca.box,
+          ca.estado,
+          ca.paciente_atendido,
+          pd.nombre AS nombre_procedimiento,
+          ur.nombre AS solicitante
         FROM citas_agendadas ca
         JOIN procedimientos_disponibles pd ON ca.procedimiento_id = pd.id
         JOIN usuarios_registrados ur ON ca.usuario_id = ur.id
-        WHERE ca.usuario_id = ?;
+        WHERE ca.usuario_id = ?
+        ORDER BY ca.fecha DESC, ca.hora DESC;
     `;
     const [appointments] = await db.execute(query, [usuario_id]);
     res.status(200).json({ appointments });
-    console.log(appointments)
   } catch (error) {
     console.error('Error al obtener citas:', error.message);
     res.status(500).json({ error: "Internal server error." });
@@ -272,10 +272,16 @@ export const getAppointmentByToken = async (req, res) => {
     const [result] = await db.execute(
       `SELECT 
         ca.*, 
-        pd.nombre AS nombre_procedimiento
+        pd.nombre AS nombre_procedimiento,
+        ur.nombre AS usuario_nombre,
+        ur.apellido AS usuario_apellido,
+        ur.email AS usuario_email,
+        ur.telefono AS usuario_telefono
       FROM citas_agendadas ca
       JOIN procedimientos_disponibles pd 
         ON ca.procedimiento_id = pd.id
+      JOIN usuarios_registrados ur
+        ON ca.usuario_id = ur.id
       WHERE ca.token_confirmacion = ?`,
       [token]
     );
@@ -284,7 +290,7 @@ export const getAppointmentByToken = async (req, res) => {
       return res.status(404).json({ error: "Cita no encontrada" });
     }
 
-    res.status(200).json({ cita: result[0] });
+    res.status(200).json(result[0]);
   } catch (error) {
     console.error("Error al obtener cita:", error);
     res.status(500).json({ error: "Error interno" });
@@ -317,7 +323,8 @@ export const confirmarCita = async (req, res) => {
       [token]
     );
 
-    return res.redirect(`https://amairsweb.vercel.app/confirmar-cita/${token}`);
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://amairsweb.vercel.app';
+    return res.redirect(`${FRONTEND_URL}/confirmar-cita/${token}`);
 
 
   } catch (error) {

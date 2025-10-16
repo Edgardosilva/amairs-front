@@ -23,33 +23,26 @@ export const verificarBox = async (fecha, hora, horaTermino,box, concurrentSessi
       horaTermino,
     ]);
 
-    console.log("Registros solapados encontrados:", solapados);
-
     if (box === "Solo en box 2") {
         const box2Ocupado = solapados.some(cita => cita.box === "Box 2");
         if (!box2Ocupado) {
           return "Box 2"; // Asigna automáticamente al box 2 si está disponible
         } else {
-          console.log("Box 2 no está disponible en esta franja horaria.");
           return null; // Box 2 está ocupado, no se puede asignar
         }
       }
 
     if (box === "Solo en gym") {
         const hayConflictoEnGym = solapados.some(cita => cita.box === "Gym");
-        console.log("hayConflictoEnGym =", hayConflictoEnGym);
         if (hayConflictoEnGym) {
-          console.log("Ya hay un procedimiento reservado en el box 'Gym' en este horario.");
           return null; 
         }
-        console.log("Asignando al box 'Gym'.");
         return "Gym"; 
       }
       
     if (concurrentSessions === 1) {
         const hayConflicto = solapados.some(cita => cita.concurrent_sessions === 1);
         if (hayConflicto) {
-          console.log('Ya hay un procedimiento exclusivo en ese horario');
           return null; // No se puede agendar porque ya hay un procedimiento exclusivo
         }
         const boxesOcupados = new Set(solapados.map(cita => cita.box));
@@ -74,7 +67,6 @@ export const verificarBox = async (fecha, hora, horaTermino,box, concurrentSessi
       }
     }
 
-    console.log("No hay boxes disponibles para este horario");
     return null; // Si no encuentra un box disponible, retorna null
   } catch (error) {
     console.error("Error verificando disponibilidad de box:", error);

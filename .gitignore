@@ -10,11 +10,18 @@ node_modules/
 *.env
 
 # Frontend (Next.js)
+.next/
 frontend/.next/
 frontend/out/
 frontend/build/
 frontend/*.tsbuildinfo
 frontend/next-env.d.ts
+
+# Archivos temporales de Next.js en raíz (no deberían estar aquí)
+app/
+components/
+public/
+styles/
 
 # Backend
 backend/dist/

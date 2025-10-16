@@ -1,5 +1,7 @@
 "use server";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://amaris-api-production.up.railway.app';
+
 // Estructura basada en tu API actual
 interface ApiResponse {
   availableTimes: string[]; // ["09:00", "09:30", "10:00", ...]
@@ -11,7 +13,7 @@ export async function obtenerHorariosDisponibles(
   try {
     // Tu endpoint actual de Amaris API
     const response = await fetch(
-      `https://amaris-api-production.up.railway.app/appointments/available?selectedDate=${fecha}`,
+      `${API_URL}/appointments/available?selectedDate=${fecha}`,
       {
         method: "GET",
         headers: {

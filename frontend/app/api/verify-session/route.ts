@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://amaris-api-production.up.railway.app';
+
 export async function GET() {
   try {
     const cookieStore = await cookies();
@@ -14,7 +16,7 @@ export async function GET() {
 
     // Verificar con el endpoint de tu backend
     const response = await fetch(
-      "https://amaris-api-production.up.railway.app/login/auth/me",
+      `${API_URL}/login/auth/me`,
       {
         method: "GET",
         headers: {
