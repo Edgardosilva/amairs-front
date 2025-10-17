@@ -67,10 +67,10 @@ const Login = () => {
             <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
                 <form action={handleSubmit} className="space-y-6">
                     <div>
-                        <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">
+                        <label htmlFor="email" className=" block text-sm/6 font-medium text-gray-900">
                             Email
                         </label>
-                        <div className="mt-2">
+                        <div className="mt-2 border rounded-md shadow-sm">
                             <input
                                 id="email"
                                 name="email"
@@ -89,7 +89,7 @@ const Login = () => {
                                 Contraseña
                             </label>
                         </div>
-                        <div className="mt-2">
+                        <div className="mt-2 border rounded-md shadow-sm">
                             <input
                                 id="password"
                                 name="password"
