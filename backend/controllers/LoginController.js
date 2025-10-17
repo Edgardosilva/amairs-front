@@ -13,9 +13,10 @@ export const register = async (req, res) => {
         if (rows.length) return res.status(409).json({ error: "El usuario ya existe" });
 
         const hashedPassword = await bcrypt.hash(contraseña, 10);
+        // Rol por defecto es 'usuario'
         await db.query(
-            'INSERT INTO usuarios_registrados (nombre, apellido, email, contraseña, telefono) VALUES (?, ?, ?, ?, ?)',
-            [nombre, apellido, email, hashedPassword, telefono]
+            'INSERT INTO usuarios_registrados (nombre, apellido, email, contraseña, telefono, rol) VALUES (?, ?, ?, ?, ?, ?)',
+            [nombre, apellido, email, hashedPassword, telefono, 'usuario']
         );
 
         res.status(201).json({ message: "Usuario registrado exitosamente" });
@@ -37,7 +38,12 @@ export const login = async (req, res) => {
         const passwordMatch = await bcrypt.compare(contraseña, user.contraseña);
         if (!passwordMatch) return res.status(401).json({ error: "Credenciales inválidas" });
 
-        const token = jwt.sign({ id: rows[0].id, email: email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        // Incluir el rol en el token JWT
+        const token = jwt.sign({ 
+            id: user.id, 
+            email: user.email,
+            rol: user.rol || 'usuario'
+        }, process.env.JWT_SECRET, { expiresIn: '1h' });
         
           res.cookie('access_token', token, {
             httpOnly: true,
@@ -51,7 +57,8 @@ export const login = async (req, res) => {
             nombre: user.nombre,
             apellido: user.apellido,
             email: user.email,
-            telefono: user.telefono
+            telefono: user.telefono,
+            rol: user.rol || 'usuario'
         };
 
         res.status(200).json({ 
@@ -91,7 +98,11 @@ export const getCurrentUser = async (req, res) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       res.status(200).json({
         authenticated: true,
-        user: { id: decoded.id, email: decoded.email }
+        user: { 
+            id: decoded.id, 
+            email: decoded.email,
+            rol: decoded.rol || 'usuario'
+        }
       });
     } catch (error) {
       res.status(401).json({ authenticated: false });
