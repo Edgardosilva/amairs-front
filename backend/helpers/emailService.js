@@ -11,8 +11,8 @@ const transporter = nodemailer.createTransport({
   });
   
 export const sendConfirmationEmail = async (email, token) => {
-  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
-  const link = `${FRONTEND_URL}/confirmar-cita/${token}`;
+  const API_URL = process.env.API_URL || 'http://localhost:3000';
+  const link = `${API_URL}/appointments/confirmar-cita/${token}`;
   
   console.log(`📧 Preparando email para: ${email}`);
   console.log(`🔗 Link de confirmación: ${link}`);

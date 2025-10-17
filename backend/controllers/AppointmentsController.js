@@ -309,10 +309,8 @@ export const confirmarCita = async (req, res) => {
     const cita = result[0];
 
     if (cita.estado === 'Confirmada') {
-      return res.status(200).json({ 
-        message: 'Esta cita ya ha sido confirmada anteriormente.',
-        alreadyConfirmed: true 
-      });
+      const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
+      return res.redirect(`${FRONTEND_URL}/dashboard?mensaje=ya-confirmada`);
     }
 
     await db.execute(
@@ -320,11 +318,8 @@ export const confirmarCita = async (req, res) => {
       [token]
     );
 
-    return res.status(200).json({ 
-      message: 'Cita confirmada exitosamente',
-      confirmed: true 
-    });
-
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
+    return res.redirect(`${FRONTEND_URL}/dashboard?mensaje=confirmada`);
 
   } catch (error) {
     console.error("Error al confirmar la cita:", error.message);
