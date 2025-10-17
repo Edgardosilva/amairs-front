@@ -15,7 +15,9 @@ export const getAllAppointments = async (req, res) => {
           ca.paciente_atendido AS paciente, 
           ca.hora, 
           ca.fecha,
-          ca.estado
+          ca.estado,
+          ca.box,
+          ca.horaTermino
       FROM citas_agendadas ca
       JOIN procedimientos_disponibles pd ON ca.procedimiento_id = pd.id
       JOIN usuarios_registrados ur ON ca.usuario_id = ur.id
@@ -39,7 +41,12 @@ export const getAllAppointments = async (req, res) => {
             id: appt.id,
             title: `${appt.procedimiento} - ${appt.paciente}`,
             start: startDate,
-            state: appt.estado
+            state: appt.estado,
+            box: appt.box,
+            horaTermino: appt.horaTermino,
+            procedimiento: appt.procedimiento,
+            paciente: appt.paciente,
+            solicitante: appt.solicitante
           };
         } catch (error) {
           console.error(`Error procesando cita ID ${appt.id}:`, error);

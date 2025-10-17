@@ -2,9 +2,10 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { Menu, X, LogOut, User } from "lucide-react"
+import { Menu, X, LogOut, User, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useFormStore, selectUser, selectIsAuthenticated } from "@/hooks/useFormStore"
+import { useAuthStore } from "@/hooks/useAuthStore"
 import { useRouter } from "next/navigation"
 import type { NavLink } from "@/types"
 import Image from "next/image"
@@ -23,6 +24,7 @@ export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const user = useFormStore(selectUser)
   const isAuthenticated = useFormStore(selectIsAuthenticated)
+  const { isAdmin } = useAuthStore()
   const { logout } = useFormStore()
   const router = useRouter()
 
@@ -71,6 +73,16 @@ export function Navigation() {
                 {link.label}
               </Link>
             ))}
+            
+            {isAuthenticated && isAdmin && (
+              <Link
+                href="/admin"
+                className="flex items-center gap-2 text-foreground hover:text-primary transition-colors text-sm font-medium"
+              >
+                <Shield size={16} className="text-primary" />
+                Panel Admin
+              </Link>
+            )}
             
             {isAuthenticated ? (
               <div className="flex items-center gap-4">
@@ -126,6 +138,17 @@ export function Navigation() {
                   {link.label}
                 </Link>
               ))}
+              
+              {isAuthenticated && isAdmin && (
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-2 text-foreground hover:text-primary transition-colors py-2"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Shield size={16} className="text-primary" />
+                  Panel Admin
+                </Link>
+              )}
               
               {isAuthenticated ? (
                 <>

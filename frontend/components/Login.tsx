@@ -4,23 +4,28 @@ import React, { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { loginAction } from '@/app/actions/auth';
 import { useFormStore } from '@/hooks/useFormStore';
+import { useAuthStore } from '@/hooks/useAuthStore';
 import Swal from 'sweetalert2';
 
 const Login = () => {
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
-    const { setUser } = useFormStore();
+    const { setUser: setFormUser } = useFormStore();
+    const { setUser: setAuthUser } = useAuthStore();
 
     const handleSubmit = async (formData: FormData) => {
         startTransition(async () => {
             const result = await loginAction(formData);
             
             if (result.success && result.user) {
-                // Guardar usuario en el store global
-                setUser({
+                // Guardar usuario en ambos stores
+                setFormUser({
                     ...result.user,
                     isAuthenticated: true,
                 });
+                
+                // Guardar en el store de autenticación con rol
+                setAuthUser(result.user);
                 
                 await Swal.fire({
                     position: "center",
@@ -29,7 +34,13 @@ const Login = () => {
                     showConfirmButton: false,
                     timer: 1500
                 });
-                router.push("/agendar");
+                
+                // Redirigir según el rol
+                if (result.user.rol === 'admin') {
+                    router.push("/admin");
+                } else {
+                    router.push("/agendar");
+                }
             } else {
                 Swal.fire({
                     icon: "error",

@@ -14,10 +14,12 @@ interface AuthStore {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  _hasHydrated: boolean;
   
   setUser: (user: User | null) => void;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  setHasHydrated: (state: boolean) => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -27,8 +29,14 @@ export const useAuthStore = create<AuthStore>()(
         user: null,
         isAuthenticated: false,
         isAdmin: false,
+        _hasHydrated: false,
 
-        setUser: (user) =>
+        setHasHydrated: (state) => {
+          set({ _hasHydrated: state });
+        },
+
+        setUser: (user) => {
+          console.log('🔐 setUser llamado con:', user);
           set(
             {
               user,
@@ -37,7 +45,8 @@ export const useAuthStore = create<AuthStore>()(
             },
             false,
             'setUser'
-          ),
+          );
+        },
 
         logout: async () => {
           try {
@@ -78,20 +87,22 @@ export const useAuthStore = create<AuthStore>()(
                     isAdmin: data.user.rol === 'admin'
                   },
                   false,
-                  'checkAuth'
+                  'checkAuth/success'
                 );
-              } else {
-                set(
-                  {
-                    user: null,
-                    isAuthenticated: false,
-                    isAdmin: false
-                  },
-                  false,
-                  'checkAuth/notAuthenticated'
-                );
+                return; // Autenticado exitosamente
               }
             }
+            
+            // Si llegamos aquí, no está autenticado
+            set(
+              {
+                user: null,
+                isAuthenticated: false,
+                isAdmin: false
+              },
+              false,
+              'checkAuth/notAuthenticated'
+            );
           } catch (error) {
             console.error('Error checking auth:', error);
             set(
@@ -107,7 +118,10 @@ export const useAuthStore = create<AuthStore>()(
         }
       }),
       {
-        name: 'auth-storage'
+        name: 'auth-storage',
+        onRehydrateStorage: () => (state) => {
+          state?.setHasHydrated(true);
+        }
       }
     )
   )

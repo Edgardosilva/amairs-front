@@ -75,6 +75,7 @@ export async function loginAction(formData: FormData) {
       apellido: data.user?.apellido || data.apellido || "",
       email: data.user?.email || data.email || email,
       telefono: data.user?.telefono || data.telefono || "",
+      rol: data.user?.rol || "usuario",
     };
     
     return { 
