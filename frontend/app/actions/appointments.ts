@@ -77,3 +77,57 @@ export async function getUserAppointments(): Promise<GetAppointmentsResponse> {
     };
   }
 }
+
+// 🔹 Nueva función para obtener TODAS las citas (solo admin)
+export async function getAllAppointments(): Promise<GetAppointmentsResponse> {
+  try {
+    // Obtener el token de autenticación
+    const cookieStore = await cookies();
+    const token = cookieStore.get("access_token")?.value;
+
+    if (!token) {
+      return {
+        success: false,
+        error: "Debes iniciar sesión para ver las citas",
+      };
+    }
+
+    // Hacer GET al endpoint de admin
+    const response = await fetch(
+      `${API_URL}/appointments/getAllAppointments`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Cookie": `access_token=${token}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        return {
+          success: false,
+          error: "No tienes permisos de administrador",
+        };
+      }
+      return {
+        success: false,
+        error: `Error ${response.status}: No se pudieron obtener las citas`,
+      };
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      appointments: data.appointments || data || [],
+    };
+  } catch (error) {
+    console.error("Error al obtener todas las citas:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Error al conectar con el servidor",
+    };
+  }
+}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/hooks/useAuthStore";
+import { getAllAppointments, type Appointment } from "@/app/actions/appointments";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, LogOut, Users, Clock, CheckCircle, XCircle } from "lucide-react";
@@ -12,7 +13,7 @@ interface Cita {
   id: number;
   title: string;
   start: string;
-  state: string;
+  estado: string;
   procedimiento?: string;
   paciente?: string;
   solicitante?: string;
@@ -63,25 +64,40 @@ export default function AdminPage() {
 
   const fetchAllAppointments = async () => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const response = await fetch(`${API_URL}/appointments/getAllAppointments`, {
-        credentials: "include",
-      });
+      console.log('📡 Obteniendo todas las citas desde Server Action...');
+      const result = await getAllAppointments();
 
-      if (response.ok) {
-        const data = await response.json();
-        setCitas(data);
+      if (result.success && result.appointments) {
+        const citasFormateadas = result.appointments.map(appt => ({
+          id: parseInt(appt.id),
+          title: `${appt.nombre_procedimiento} - ${appt.paciente_atendido}`,
+          start: `${appt.fecha}T${appt.hora}`,
+          estado: appt.estado,
+          procedimiento: appt.nombre_procedimiento,
+          paciente: appt.paciente_atendido,
+          solicitante: appt.solicitante,
+          fecha: appt.fecha,
+          hora: appt.hora,
+          horaTermino: appt.horaTermino,
+          box: appt.box || "N/A"
+        }));
+
+        setCitas(citasFormateadas);
         
         // Calcular estadísticas
         const stats = {
-          total: data.length,
-          confirmadas: data.filter((c: Cita) => c.state === "Confirmada").length,
-          pendientes: data.filter((c: Cita) => c.state === "Pendiente").length,
-          canceladas: data.filter((c: Cita) => c.state === "Cancelada").length
+          total: citasFormateadas.length,
+          confirmadas: citasFormateadas.filter((c) => c.estado === "Confirmada").length,
+          pendientes: citasFormateadas.filter((c) => c.estado === "Pendiente").length,
+          canceladas: citasFormateadas.filter((c) => c.estado === "Cancelada").length
         };
         setStats(stats);
-      } else if (response.status === 403) {
-        router.push("/dashboard");
+        console.log('✅ Citas cargadas:', stats);
+      } else {
+        console.error('❌ Error al obtener citas:', result.error);
+        if (result.error?.includes("permisos")) {
+          router.push("/dashboard");
+        }
       }
     } catch (error) {
       console.error("Error fetching appointments:", error);
@@ -202,7 +218,7 @@ export default function AdminPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="font-semibold text-lg">{cita.title}</h3>
-                        {getStateBadge(cita.state)}
+                        {getStateBadge(cita.estado)}
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">

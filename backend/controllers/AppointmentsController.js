@@ -7,57 +7,33 @@ import jwt from 'jsonwebtoken';
 // Controlador para obtener todas las citas
 export const getAllAppointments = async (req, res) => {
   try {
-    const [rows] = await db.execute(`
-      SELECT 
-          ca.id,
-          pd.nombre AS procedimiento, 
-          ur.nombre AS solicitante, 
-          ca.paciente_atendido AS paciente, 
-          ca.hora, 
-          ca.fecha,
-          ca.estado,
-          ca.box,
-          ca.horaTermino
+    console.log('🔍 [ADMIN] Obteniendo todas las citas...');
+    
+    const query = `
+      SELECT
+        ca.id,
+        ca.fecha,
+        ca.hora,
+        ca.horaTermino,
+        ca.duracion,
+        ca.box,
+        ca.estado,
+        ca.paciente_atendido,
+        pd.nombre AS nombre_procedimiento,
+        ur.nombre AS solicitante
       FROM citas_agendadas ca
       JOIN procedimientos_disponibles pd ON ca.procedimiento_id = pd.id
       JOIN usuarios_registrados ur ON ca.usuario_id = ur.id
-    `);
-
-    // Procesa citas asegurando que los datos sean válidos
-    const appointments = rows
-      .filter(appt => appt.fecha && appt.hora) 
-      .map(appt => {
-        try {
-          const fechaISO = new Date(appt.fecha).toISOString().split("T")[0];
-          const dateTimeString = `${fechaISO}T${appt.hora}`;
-          const startDate = new Date(dateTimeString);
-
-          if (isNaN(startDate.getTime())) {
-            console.error(`Fecha inválida en ID ${appt.id}:`, appt.fecha, appt.hora);
-            return null; 
-          }
-
-          return {
-            id: appt.id,
-            title: `${appt.procedimiento} - ${appt.paciente}`,
-            start: startDate,
-            state: appt.estado,
-            box: appt.box,
-            horaTermino: appt.horaTermino,
-            procedimiento: appt.procedimiento,
-            paciente: appt.paciente,
-            solicitante: appt.solicitante
-          };
-        } catch (error) {
-          console.error(`Error procesando cita ID ${appt.id}:`, error);
-          return null;
-        }
-      })
-      .filter(appt => appt !== null); 
-
-    res.json(appointments);
+      ORDER BY ca.fecha DESC, ca.hora DESC;
+    `;
+    
+    const [appointments] = await db.execute(query);
+    
+    console.log(`✅ [ADMIN] ${appointments.length} citas encontradas`);
+    res.status(200).json({ appointments });
+    
   } catch (error) {
-    console.error("Error obteniendo citas:", error);
+    console.error('❌ [ADMIN] Error obteniendo citas:', error.message);
     res.status(500).json({ error: "Error al obtener citas" });
   }
 };

@@ -5,11 +5,22 @@ export const verifyAdmin = (req, res, next) => {
     console.log('🔐 Verificando admin...');
     console.log('📦 Cookies recibidas:', req.cookies);
     console.log('📋 Headers:', req.headers.cookie);
+    console.log('🔑 Authorization header:', req.headers.authorization);
     
-    const token = req.cookies.access_token;
+    // Intentar obtener token de cookies o de headers
+    let token = req.cookies.access_token;
+    
+    // Si no hay token en cookies, intentar obtenerlo del header Authorization
+    if (!token && req.headers.authorization) {
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+        console.log('✅ Token encontrado en Authorization header');
+      }
+    }
 
     if (!token) {
-      console.log('❌ No hay token en cookies');
+      console.log('❌ No hay token en cookies ni headers');
       return res.status(401).json({ error: 'No estás autenticado' });
     }
 
