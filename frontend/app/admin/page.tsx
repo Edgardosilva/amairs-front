@@ -68,20 +68,30 @@ export default function AdminPage() {
       const result = await getAllAppointments();
 
       if (result.success && result.appointments) {
-        const citasFormateadas = result.appointments.map(appt => ({
-          id: parseInt(appt.id),
-          title: `${appt.nombre_procedimiento} - ${appt.paciente_atendido}`,
-          start: `${appt.fecha}T${appt.hora}`,
-          estado: appt.estado,
-          procedimiento: appt.nombre_procedimiento,
-          paciente: appt.paciente_atendido,
-          solicitante: appt.solicitante,
-          fecha: appt.fecha,
-          hora: appt.hora,
-          horaTermino: appt.horaTermino,
-          box: appt.box || "N/A"
-        }));
+        console.log('🔍 Primera cita raw:', result.appointments[0]); // Debug
+        
+        const citasFormateadas = result.appointments.map(appt => {
+          // Formatear la fecha correctamente desde MySQL
+          const fechaISO = appt.fecha.includes('T') 
+            ? appt.fecha.split('T')[0] 
+            : appt.fecha;
+          
+          return {
+            id: parseInt(appt.id),
+            title: `${appt.nombre_procedimiento} - ${appt.paciente_atendido}`,
+            start: `${fechaISO}T${appt.hora}`,
+            estado: appt.estado,
+            procedimiento: appt.nombre_procedimiento,
+            paciente: appt.paciente_atendido,
+            solicitante: appt.solicitante,
+            fecha: fechaISO,
+            hora: appt.hora,
+            horaTermino: appt.horaTermino,
+            box: appt.box || "N/A"
+          };
+        });
 
+        console.log('🔍 Primera cita formateada:', citasFormateadas[0]); // Debug
         setCitas(citasFormateadas);
         
         // Calcular estadísticas
@@ -125,12 +135,28 @@ export default function AdminPage() {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("es-ES", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric"
-    });
+    try {
+      // Si dateString ya tiene formato ISO completo, tomar solo la fecha
+      const dateOnly = dateString.includes('T') ? dateString.split('T')[0] : dateString;
+      
+      // Crear fecha en UTC para evitar problemas de zona horaria
+      const [year, month, day] = dateOnly.split('-');
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      
+      if (isNaN(date.getTime())) {
+        console.error('Fecha inválida:', dateString);
+        return 'Fecha inválida';
+      }
+      
+      return date.toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      });
+    } catch (error) {
+      console.error('Error formateando fecha:', dateString, error);
+      return 'Error en fecha';
+    }
   };
 
   // Mostrar loading mientras hidrata o carga datos
@@ -223,14 +249,11 @@ export default function AdminPage() {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
-                          {cita.start && formatDate(cita.start)}
+                          {cita.fecha && formatDate(cita.fecha)}
                         </div>
                         <div className="flex items-center gap-2">
                           <Clock className="h-4 w-4" />
-                          {new Date(cita.start).toLocaleTimeString("es-ES", {
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })}
+                          {cita.hora}
                         </div>
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4" />
