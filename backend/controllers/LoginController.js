@@ -45,12 +45,18 @@ export const login = async (req, res) => {
             rol: user.rol || 'usuario'
         }, process.env.JWT_SECRET, { expiresIn: '1h' });
         
-          res.cookie('access_token', token, {
+        console.log('🍪 Configurando cookie para:', email);
+        console.log('🌐 Entorno:', process.env.NODE_ENV);
+        
+        res.cookie('access_token', token, {
             httpOnly: true,
-            secure: true, 
-            sameSite: 'None', 
-            maxAge: 60 * 60 * 1000 
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+            maxAge: 60 * 60 * 1000,
+            path: '/'
         });
+        
+        console.log('✅ Cookie configurada exitosamente');
 
         const userInfo = {
             id: user.id,
