@@ -309,7 +309,10 @@ export const confirmarCita = async (req, res) => {
     const cita = result[0];
 
     if (cita.estado === 'Confirmada') {
-      return res.send('Esta cita ya ha sido confirmada anteriormente.');
+      return res.status(200).json({ 
+        message: 'Esta cita ya ha sido confirmada anteriormente.',
+        alreadyConfirmed: true 
+      });
     }
 
     await db.execute(
@@ -317,8 +320,10 @@ export const confirmarCita = async (req, res) => {
       [token]
     );
 
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://amairsweb.vercel.app';
-    return res.redirect(`${FRONTEND_URL}/confirmar-cita/${token}`);
+    return res.status(200).json({ 
+      message: 'Cita confirmada exitosamente',
+      confirmed: true 
+    });
 
 
   } catch (error) {

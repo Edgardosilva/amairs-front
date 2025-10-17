@@ -12,7 +12,7 @@ router.post("/", AppointmentsController.createAppointment);
 
 router.post("/deleteAppointments", AppointmentsController.deleteAppointment);
 
-router.get("/confirmar-cita/:token", AppointmentsController.confirmarCita);
+router.post("/confirmar-cita/:token", AppointmentsController.confirmarCita);
 
 router.get('/confirmar-cita/:token/detalles', AppointmentsController.getAppointmentByToken);
 
