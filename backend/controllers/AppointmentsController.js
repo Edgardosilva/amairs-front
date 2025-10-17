@@ -234,76 +234,6 @@ export const getUserAppointments = async (req, res) => {
   }
 }
 
-export const getAppointmentByToken = async (req, res) => {
-  try {
-    const { token } = req.params;
-
-    const [result] = await db.execute(
-      `SELECT 
-        ca.*, 
-        pd.nombre AS nombre_procedimiento,
-        ur.nombre AS usuario_nombre,
-        ur.apellido AS usuario_apellido,
-        ur.email AS usuario_email,
-        ur.telefono AS usuario_telefono
-      FROM citas_agendadas ca
-      JOIN procedimientos_disponibles pd 
-        ON ca.procedimiento_id = pd.id
-      JOIN usuarios_registrados ur
-        ON ca.usuario_id = ur.id
-      WHERE ca.token_confirmacion = ?`,
-      [token]
-    );
-
-    if (!result.length) {
-      return res.status(404).json({ error: "Cita no encontrada" });
-    }
-
-    res.status(200).json(result[0]);
-  } catch (error) {
-    console.error("Error al obtener cita:", error);
-    res.status(500).json({ error: "Error interno" });
-  }
-};
-
-
-
-export const confirmarCita = async (req, res) => {
-  try {
-    const { token } = req.params;
-
-    const [result] = await db.execute(
-      'SELECT * FROM citas_agendadas WHERE token_confirmacion = ?',
-      [token]
-    );
-
-    if (!result.length) {
-      return res.status(404).send('Token inválido o cita no encontrada');
-    }
-
-    const cita = result[0];
-
-    if (cita.estado === 'Confirmada') {
-      const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
-      return res.redirect(`${FRONTEND_URL}/dashboard?mensaje=ya-confirmada`);
-    }
-
-    await db.execute(
-      'UPDATE citas_agendadas SET estado = "Confirmada" WHERE token_confirmacion = ?',
-      [token]
-    );
-
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
-    return res.redirect(`${FRONTEND_URL}/dashboard?mensaje=confirmada`);
-
-  } catch (error) {
-    console.error("Error al confirmar la cita:", error.message);
-    res.status(500).send('Hubo un error al confirmar la cita.');
-  }
-};
-
-
-
 export const deleteAppointment = async (req, res) => {
   try {
     const { id } = req.body;
@@ -380,10 +310,5 @@ export default {
     getAvailableAppointments,
     createAppointment,
     getUserAppointments,
-    sendConfirmationEmail,
-    confirmarCita,
-    getAppointmentByToken,
-    deleteAppointment,
-    // updateAppointment,
-    // deleteAppointment
+    deleteAppointment
 };
