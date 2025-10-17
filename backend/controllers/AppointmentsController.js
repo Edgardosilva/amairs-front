@@ -1,8 +1,6 @@
 import { verificarDisponibilidad } from '../helpers/verificarDisponibilidad.js';
 import { verificarBox } from '../helpers/verificarBox.js';
-import { sendConfirmationEmail } from '../helpers/emailService.js';
 import db from '../database.js';
-import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
 
 
@@ -160,21 +158,6 @@ export const createAppointment = async (req, res) => {
       return res.status(400).json({ error: "No hay un box disponible para este horario." });
     }
 
-    // Buscar el email del usuario autenticado
-    const [userResult] = await db.execute(
-      'SELECT email FROM usuarios_registrados WHERE id = ?',
-      [usuarioId]
-    );
-
-    if (!userResult.length) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
-    }
-
-    const email = userResult[0].email;
-
-    // Generar token único para confirmación
-    const tokenConfirmacion = uuidv4();
-
     // Insertar en horarios_ocupados
     const queryInsert = `
       INSERT INTO horarios_ocupados (fecha, hora, horaTermino, procedimiento_id, box, concurrent_sessions)
@@ -184,37 +167,29 @@ export const createAppointment = async (req, res) => {
       fecha, hora, horaTermino, procedimiento_id, boxAsignado, concurrentSessions
     ]);
 
-    // Insertar en citas_agendadas
+    // Insertar en citas_agendadas con estado "Confirmada" por defecto
     const queryInsertCitas = `
       INSERT INTO citas_agendadas 
-      (usuario_id, procedimiento_id, duracion, box, estado, fecha, hora, horaTermino, paciente_atendido, token_confirmacion)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+      (usuario_id, procedimiento_id, duracion, box, estado, fecha, hora, horaTermino, paciente_atendido)
+      VALUES (?, ?, ?, ?, 'Confirmada', ?, ?, ?, ?);
     `;
     await db.execute(queryInsertCitas, [
       usuarioId,
       procedimiento_id,
       duracion,
       boxAsignado,
-      estado,
       fecha,
       hora,
       horaTermino,
-      paciente_atendido,
-      tokenConfirmacion
+      paciente_atendido
     ]);
 
-    // Responder inmediatamente al cliente
-    res.status(201).json({ message: "Cita creada exitosamente", box: boxAsignado });
-
-    // Enviar el correo en segundo plano (no bloquea la respuesta)
-    sendConfirmationEmail(email, tokenConfirmacion)
-      .then(() => {
-        console.log(`✅ Correo de confirmación enviado a ${email}`);
-      })
-      .catch((emailError) => {
-        console.error(`❌ Error al enviar correo a ${email}:`, emailError.message);
-        // La cita ya fue creada, solo falló el envío del correo
-      });
+    console.log('✅ [CITAS] Cita creada y confirmada automáticamente');
+    res.status(201).json({ 
+      message: "Cita creada y confirmada exitosamente", 
+      box: boxAsignado,
+      estado: "Confirmada"
+    });
 
   } catch (error) {
     console.error("Error al crear la cita:", error.message);

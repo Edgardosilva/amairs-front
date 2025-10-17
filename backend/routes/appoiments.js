@@ -12,9 +12,9 @@ router.post("/", AppointmentsController.createAppointment);
 
 router.post("/deleteAppointments", AppointmentsController.deleteAppointment);
 
-router.get("/confirmar-cita/:token", AppointmentsController.confirmarCita);
-
-router.get('/confirmar-cita/:token/detalles', AppointmentsController.getAppointmentByToken);
+// Rutas de confirmación por email deshabilitadas (no se usa confirmación)
+// router.get("/confirmar-cita/:token", AppointmentsController.confirmarCita);
+// router.get('/confirmar-cita/:token/detalles', AppointmentsController.getAppointmentByToken);
 
 router.get("/available", AppointmentsController.getAvailableAppointments);
 
