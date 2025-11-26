@@ -16,7 +16,7 @@ const services = [
   },
   {
     icon: Zap,
-    title: "Electroestética",
+    title: "Masajes Reductivos",
     description: "Tecnología avanzada para modelar y tonificar tu cuerpo de forma no invasiva.",
   },
   {

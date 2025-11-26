@@ -257,7 +257,7 @@ export default function AdminPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4" />
-                          Box: {cita.box ? cita.box : "N/A"}
+                           {cita.box ? cita.box : "N/A"}
                         </div>
                       </div>
                     </div>

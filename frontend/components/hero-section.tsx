@@ -32,7 +32,7 @@ export function HeroSection() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
             <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground text-base px-8">
-              <Link href="/contacto">
+              <Link href="/agendar/paso-1">
                 Agendar Consulta
                 <ArrowRight className="ml-2" size={20} />
               </Link>

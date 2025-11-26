@@ -109,7 +109,7 @@ export default function ServiciosPage() {
               Contáctanos para una consulta personalizada y descubre cuál es el mejor tratamiento para ti.
             </p>
             <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Link href="/contacto">Agendar Consulta</Link>
+              <Link href="/agendar/paso-1">Agendar Consulta</Link>
             </Button>
           </div>
         </div>

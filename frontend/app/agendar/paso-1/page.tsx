@@ -36,8 +36,8 @@ export default function Paso1Page() {
     }
     if (!telefono.trim()) {
       newErrors.telefono = "El teléfono es requerido";
-    } else if (!/^\d{9,}$/.test(telefono.replace(/\s/g, ""))) {
-      newErrors.telefono = "Ingresa un teléfono válido";
+    } else if (!/^\+56\d{9}$/.test(telefono.replace(/\s/g, ""))) {
+      newErrors.telefono = "Formato: +56973846573 (código país + 9 dígitos)";
     }
     if (!correo.trim()) {
       newErrors.correo = "El correo es requerido";

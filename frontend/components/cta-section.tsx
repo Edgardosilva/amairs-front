@@ -19,7 +19,7 @@ export function CTASection() {
               variant="secondary"
               className="bg-background text-foreground hover:bg-background/90 text-base px-8"
             >
-              <Link href="/contacto">Agendar Ahora</Link>
+              <Link href="/agendar/paso-1">Agendar Ahora</Link>
             </Button>
           </div>
         </div>
