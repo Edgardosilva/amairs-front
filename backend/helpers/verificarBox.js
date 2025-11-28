@@ -1,10 +1,9 @@
 import db from '../database.js';
 
-export const verificarBox = async (fecha, hora, horaTermino,box, concurrentSessions) => {
+export const verificarBox = async (fecha, hora, horaTermino, box, concurrentSessions, procedimiento_id) => {
   try {
-
     const querySolapamientos = `
-      SELECT box, concurrent_sessions 
+      SELECT box, concurrent_sessions, procedimiento_id 
       FROM horarios_ocupados 
       WHERE fecha = ? AND (
         (hora >= ? AND hora < ?) OR 
@@ -23,46 +22,49 @@ export const verificarBox = async (fecha, hora, horaTermino,box, concurrentSessi
       horaTermino,
     ]);
 
+    const limpiezasFaciales = [1, 2, 3];
+
     if (box === "Solo en box 2") {
-        const box2Ocupado = solapados.some(cita => cita.box === "Box 2");
-        if (!box2Ocupado) {
-          return "Box 2"; 
-        } else {
-          return null; 
-        }
+      const box2Ocupado = solapados.some(cita => cita.box === "Box 2");
+      if (!box2Ocupado) {
+        return "Box 2"; 
+      } else {
+        return null;
       }
+    }
 
     if (box === "Solo en gym") {
-        const hayConflictoEnGym = solapados.some(cita => cita.box === "Gym");
-        if (hayConflictoEnGym) {
-          return null; 
-        }
+      const gymOcupado = solapados.some(cita => cita.box === "Gym");
+      if (!gymOcupado) {
         return "Gym"; 
+      } else {
+        return null;
       }
-      
-    if (concurrentSessions === 1) {
-        const hayConflicto = solapados.some(cita => cita.concurrent_sessions === 1);
-        if (hayConflicto) {
-          return null; 
-        }
-        const boxesOcupados = new Set(solapados.map(cita => cita.box));
-        const boxDisponible = ["Box 1", "Box 2", "Box 3"].find(box => !boxesOcupados.has(box));
-        return boxDisponible || null;
-      }
-      
-    if (concurrentSessions > 1) {
-      const boxesDisponibles = ["Box 1", "Box 2", "Box 3"];
-      for (const box of boxesDisponibles) {
-        const sesionesEnMismoBox = solapados.filter(cita => cita.box === box);
-        const sesionesEnMismoBoxActuales = sesionesEnMismoBox.reduce(
-          (total, registro) => total + registro.concurrent_sessions,
-          0
-        );
+    }
 
-        if (sesionesEnMismoBoxActuales + concurrentSessions <= 3) {
-          return box; 
-        }
+    if (concurrentSessions === 1 && limpiezasFaciales.includes(procedimiento_id)) {
+      const hayOtraLimpiezaFacial = solapados.some(cita => 
+        limpiezasFaciales.includes(cita.procedimiento_id)
+      );
+      if (hayOtraLimpiezaFacial) {
+        return null;
       }
+      
+      const boxesOcupados = new Set(solapados.map(cita => cita.box));
+      const boxDisponible = ["Box 1", "Box 2", "Box 3"].find(b => !boxesOcupados.has(b));
+      return boxDisponible || null;
+    }
+
+    if (concurrentSessions === 1) {
+      const boxesOcupados = new Set(solapados.map(cita => cita.box));
+      const boxDisponible = ["Box 1", "Box 2", "Box 3"].find(b => !boxesOcupados.has(b));
+      return boxDisponible || null;
+    }
+
+    if (concurrentSessions > 1) {
+      const boxesOcupados = new Set(solapados.map(cita => cita.box));
+      const boxDisponible = ["Box 1", "Box 2", "Box 3"].find(b => !boxesOcupados.has(b));
+      return boxDisponible || null;
     }
 
     return null; 

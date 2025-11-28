@@ -20,13 +20,13 @@ const servicios: Procedimiento[] = [
   { id: "1", nombre: "Limpieza Facial Básica", duracion: 45, precio: 25000, descripcion: "Duración: 45 min", box: "Cualquier box", concurrentSessions: 1 },
   { id: "2", nombre: "Limpieza Facial Premium", duracion: 90, precio: 45000, descripcion: "Duración: 90 min", box: "Cualquier box", concurrentSessions: 1 },
   { id: "3", nombre: "Limpieza Facial Superpremium", duracion: 120, precio: 65000, descripcion: "Duración: 120 min", box: "Cualquier box", concurrentSessions: 1 },
-  { id: "4", nombre: "Masaje (30 min)", duracion: 30, precio: 20000, descripcion: "Duración: 30 min", box: "Box 3", concurrentSessions: 1 },
-  { id: "5", nombre: "Masaje (45 min)", duracion: 45, precio: 30000, descripcion: "Duración: 45 min", box: "Box 3", concurrentSessions: 1 },
-  { id: "6", nombre: "Entrenamiento Funcional", duracion: 60, precio: 35000, descripcion: "Duración: 60 min", box: "Box 4", concurrentSessions: 1 },
-  { id: "7", nombre: "Drenaje Linfático", duracion: 60, precio: 40000, descripcion: "Duración: 60 min", box: "Cualquier box", concurrentSessions: 1 },
-  { id: "8", nombre: "Presoterapia", duracion: 60, precio: 35000, descripcion: "Duración: 60 min", box: "Cualquier box", concurrentSessions: 2 },
+  { id: "4", nombre: "Masaje (30 min)", duracion: 30, precio: 20000, descripcion: "Duración: 30 min", box: "Cualquier box", concurrentSessions: 3 },
+  { id: "5", nombre: "Masaje (45 min)", duracion: 45, precio: 30000, descripcion: "Duración: 45 min", box: "Cualquier box", concurrentSessions: 3 },
+  { id: "6", nombre: "Entrenamiento Funcional", duracion: 60, precio: 35000, descripcion: "Duración: 60 min", box: "Solo en gym", concurrentSessions: 1 },
+  { id: "7", nombre: "Drenaje Linfático", duracion: 60, precio: 40000, descripcion: "Duración: 60 min", box: "Cualquier box", concurrentSessions: 3 },
+  { id: "8", nombre: "Presoterapia", duracion: 60, precio: 35000, descripcion: "Duración: 60 min", box: "Cualquier box", concurrentSessions: 1 },
   { id: "9", nombre: "Lifting de Pestañas", duracion: 120, precio: 55000, descripcion: "Duración: 120 min", box: "Cualquier box", concurrentSessions: 1 },
-  { id: "10", nombre: "Radiofrecuencia Facial", duracion: 45, precio: 42000, descripcion: "Duración: 45 min", box: "Cualquier box", concurrentSessions: 1 },
+  { id: "10", nombre: "Radiofrecuencia Facial", duracion: 45, precio: 42000, descripcion: "Duración: 45 min", box: "Solo en box 2", concurrentSessions: 1 },
 ];
 
 export default function Paso2Page() {

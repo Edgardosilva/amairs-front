@@ -42,10 +42,14 @@ export const getAllAppointments = async (req, res) => {
 
 export const getAvailableAppointments = async (req, res) => {
   try {
-    const { selectedDate } = req.query;
+    const { selectedDate, procedimiento_id } = req.query;
 
     if (!selectedDate || selectedDate.trim() === "") {
       return res.status(400).json({ error: "Date is required." });
+    }
+
+    if (!procedimiento_id) {
+      return res.status(400).json({ error: "Procedimiento ID is required." });
     }
 
     const isValidDate = !isNaN(Date.parse(selectedDate));
@@ -53,16 +57,75 @@ export const getAvailableAppointments = async (req, res) => {
       return res.status(400).json({ error: "Invalid date format." });
     }
 
-    // Consulta horarios ocupados
+    // Consulta horarios ocupados con procedimiento_id
     const query = `
-      SELECT hora, horaTermino FROM horarios_ocupados
+      SELECT hora, horaTermino, box, procedimiento_id FROM horarios_ocupados
       WHERE fecha = ?
     `;
     const [occupiedSchedules] = await db.execute(query, [selectedDate]);
     const allTimes = generateTimeSlots("09:00", "18:00", 15); 
-    const availableTimes = allTimes.filter((time) =>
-      !isTimeOccupied(time, occupiedSchedules)
-    );
+    
+    const availableTimes = allTimes.filter((time) => {
+      const [hours, minutes] = time.split(":").map(Number);
+      const timeInMinutes = hours * 60 + minutes;
+      
+      // Obtener todas las citas que se solapan con este horario
+      const citasEnHorario = occupiedSchedules.filter(schedule => {
+        const [startHours, startMinutes] = schedule.hora.split(":").map(Number);
+        const [endHours, endMinutes] = schedule.horaTermino.split(":").map(Number);
+        const startInMinutes = startHours * 60 + startMinutes;
+        const endInMinutes = endHours * 60 + endMinutes;
+        
+        // Verificar si hay solapamiento: el horario actual está dentro del rango ocupado
+        return timeInMinutes >= startInMinutes && timeInMinutes < endInMinutes;
+      });
+      
+      // Si no hay citas en este horario, está disponible
+      if (citasEnHorario.length === 0) return true;
+      
+      const limpiezasFaciales = [1, 2, 3];
+      const procId = parseInt(procedimiento_id);
+      
+      // Si el procedimiento que se quiere agendar es limpieza facial
+      if (limpiezasFaciales.includes(procId)) {
+        // Verificar si ya hay otra limpieza facial
+        const hayLimpiezaFacial = citasEnHorario.some(cita => 
+          limpiezasFaciales.includes(cita.procedimiento_id)
+        );
+        if (hayLimpiezaFacial) return false; // No se puede agendar
+        
+        // Verificar si hay boxes disponibles
+        const boxesOcupados = new Set(
+          citasEnHorario
+            .filter(cita => ["Box 1", "Box 2", "Box 3"].includes(cita.box))
+            .map(cita => cita.box)
+        );
+        return boxesOcupados.size < 3;
+      }
+      
+      // Si el procedimiento requiere el Gym
+      if (procId === 6) { // Entrenamiento Funcional
+        const gymOcupado = citasEnHorario.some(cita => cita.box === "Gym");
+        return !gymOcupado;
+      }
+      
+      // Si el procedimiento requiere Box 2
+      if (procId === 10) { // Radiofrecuencia Facial
+        const box2Ocupado = citasEnHorario.some(cita => cita.box === "Box 2");
+        return !box2Ocupado;
+      }
+      
+      // Para otros procedimientos, verificar si hay boxes disponibles
+      // Contar boxes ocupados (solo Box 1, 2, 3)
+      const boxesOcupados = new Set(
+        citasEnHorario
+          .filter(cita => ["Box 1", "Box 2", "Box 3"].includes(cita.box))
+          .map(cita => cita.box)
+      );
+      
+      // Si hay menos de 3 boxes ocupados, está disponible
+      return boxesOcupados.size < 3;
+    });
 
     res.status(200).json({ availableTimes });
   } catch (error) {
@@ -83,26 +146,6 @@ const generateTimeSlots = (start, end, interval) => {
   }
 
   return times;
-};
-
-// Verificar si un horario está ocupado
-const isTimeOccupied = (time, occupiedSchedules) => {
-  const [hours, minutes] = time.split(":").map(Number);
-  const timeInMinutes = hours * 60 + minutes;
-
-  for (const schedule of occupiedSchedules) {
-    const [startHours, startMinutes] = schedule.hora.split(":").map(Number);
-    const [endHours, endMinutes] = schedule.horaTermino.split(":").map(Number);
-
-    const startInMinutes = startHours * 60 + startMinutes;
-    const endInMinutes = endHours * 60 + endMinutes;
-
-    if (timeInMinutes >= startInMinutes && timeInMinutes < endInMinutes) {
-      return true; // Está ocupado
-    }
-  }
-
-  return false; // Está disponible
 };
 
 
@@ -135,8 +178,8 @@ export const createAppointment = async (req, res) => {
       return res.status(400).json({ error: "Faltan datos obligatorios en la solicitud" });
     }
 
-    // Verificar y asignar box disponible
-    const boxAsignado = await verificarBox(fecha, hora, horaTermino, box, concurrentSessions);
+    const boxAsignado = await verificarBox(fecha, hora, horaTermino, box, concurrentSessions, procedimiento_id);
+    
     if (!boxAsignado) {
       return res.status(400).json({ error: "No hay un box disponible para este horario." });
     }
@@ -167,7 +210,6 @@ export const createAppointment = async (req, res) => {
       paciente_atendido
     ]);
 
-    console.log('✅ [CITAS] Cita creada y confirmada automáticamente');
     res.status(201).json({ 
       message: "Cita creada y confirmada exitosamente", 
       box: boxAsignado,

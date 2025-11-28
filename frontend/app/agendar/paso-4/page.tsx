@@ -256,18 +256,6 @@ export default function Paso4Page() {
                     <p className="font-semibold text-2xl">{formData.hora}</p>
                   </div>
                 </div>
-
-                {formData.boxAsignado && (
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-[#52a2b2]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-5 h-5 text-[#52a2b2]" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground font-medium">Ubicación</p>
-                      <p className="font-semibold">{formData.boxAsignado}</p>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>

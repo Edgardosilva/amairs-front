@@ -22,13 +22,10 @@ const steps = [
 
 export default function Paso3Page() {
   const router = useRouter();
-  // ✅ BEST PRACTICE: Usar selectores para mejor performance
   const formData = useFormStore((state) => state.formData);
   const setAppointment = useFormStore((state) => state.setAppointment);
   
   const [isPending, startTransition] = useTransition();
-
-  // ✅ BEST PRACTICE: Inicializar desde Zustand (persistencia)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     formData.fecha ? new Date(formData.fecha) : undefined
   );
@@ -36,39 +33,32 @@ export default function Paso3Page() {
   const [horariosDisponibles, setHorariosDisponibles] = useState<string[]>([]);
   const [selectedRange, setSelectedRange] = useState<string[]>([]);
 
-  // ✅ BEST PRACTICE: No necesitas loading separado cuando usas useTransition
-  // isPending ya maneja el estado de carga
-
-  // Validar que haya servicio seleccionado
   useEffect(() => {
     if (!formData.procedimiento) {
       router.push("/agendar/paso-2");
     }
   }, [formData.procedimiento, router]);
 
-  // ✅ BEST PRACTICE: Cargar horarios con Server Action + useTransition
   useEffect(() => {
-    if (selectedDate) {
+    if (selectedDate && formData.procedimiento?.id) {
       const fechaStr = format(selectedDate, "yyyy-MM-dd");
+      const procedimientoId = formData.procedimiento.id;
 
       startTransition(async () => {
-        const horarios = await obtenerHorariosDisponibles(fechaStr);
+        const horarios = await obtenerHorariosDisponibles(fechaStr, procedimientoId);
         setHorariosDisponibles(horarios);
       });
     }
-  }, [selectedDate]);
+  }, [selectedDate, formData.procedimiento]);
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
-    setSelectedHora(""); // Reset hora al cambiar fecha
-    setSelectedRange([]); // Reset rango al cambiar fecha
+    setSelectedHora("");
+    setSelectedRange([]);
   };
 
   const handleHoraSelect = (hora: string) => {
-    // Obtener duración del procedimiento seleccionado
     const duracion = formData.procedimiento?.duracion || 60;
-    
-    // Calcular el rango de horarios que ocupa el procedimiento
     const rango = calcularRangoHorarios(hora, duracion);
     
     setSelectedHora(hora);
@@ -78,8 +68,7 @@ export default function Paso3Page() {
   const handleContinuar = () => {
     if (selectedDate && selectedHora) {
       const fechaStr = format(selectedDate, "yyyy-MM-dd");
-      // Box asignado se puede calcular o dejar vacío por ahora
-      setAppointment(fechaStr, selectedHora, "Box 1");
+      setAppointment(fechaStr, selectedHora, "");
       router.push("/agendar/paso-4");
     }
   };

@@ -2,25 +2,23 @@
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://amaris-api-production.up.railway.app';
 
-// Estructura basada en tu API actual
 interface ApiResponse {
-  availableTimes: string[]; // ["09:00", "09:30", "10:00", ...]
+  availableTimes: string[];
 }
 
 export async function obtenerHorariosDisponibles(
-  fecha: string // formato: "YYYY-MM-DD"
+  fecha: string,
+  procedimiento_id: string
 ): Promise<string[]> {
   try {
-    // Tu endpoint actual de Amaris API
     const response = await fetch(
-      `${API_URL}/appointments/available?selectedDate=${fecha}`,
+      `${API_URL}/appointments/available?selectedDate=${fecha}&procedimiento_id=${procedimiento_id}`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
-        // Cache por 30 segundos para horarios actualizados
-        next: { revalidate: 30 },
+        cache: "no-store",
       }
     );
 
@@ -30,13 +28,9 @@ export async function obtenerHorariosDisponibles(
     }
 
     const data: ApiResponse = await response.json();
-    
-    // Retornar los horarios disponibles directamente como tu API los envía
     return data.availableTimes || [];
   } catch (error) {
     console.error("Error al obtener horarios:", error);
-    // En producción, podrías retornar [] para que el usuario sepa que no hay disponibilidad
-    // O generar horarios mock solo en desarrollo
     if (process.env.NODE_ENV === "development") {
       return generarHorariosMock();
     }
@@ -44,7 +38,6 @@ export async function obtenerHorariosDisponibles(
   }
 }
 
-// Función auxiliar para horarios mock (solo desarrollo)
 function generarHorariosMock(): string[] {
   return [
     "09:00", "09:15", "09:30", "09:45",
