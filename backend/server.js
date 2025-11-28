@@ -2,6 +2,7 @@ import express from 'express';
 import proceduresRouter from './routes/procedures.js';
 import appoimentsRouter from './routes/appoiments.js';
 import loginRouter from './routes/login.js';
+import patientsRouter from './routes/patients.js';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -51,6 +52,7 @@ app.options('*', cors());
 app.use('/procedures', proceduresRouter);
 app.use('/appointments', appoimentsRouter);
 app.use('/login', loginRouter);
+app.use('/patients', patientsRouter);
 
 
 const PORT = process.env.PORT || 3000;

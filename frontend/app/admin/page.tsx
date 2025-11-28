@@ -6,7 +6,7 @@ import { useAuthStore } from "@/hooks/useAuthStore";
 import { getAllAppointments, type Appointment } from "@/app/actions/appointments";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, LogOut, Users, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Calendar, LogOut, Users, Clock, CheckCircle, XCircle, UserSearch } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Cita {
@@ -28,6 +28,7 @@ export default function AdminPage() {
   const { user, isAdmin, isAuthenticated, logout, _hasHydrated } = useAuthStore();
   const [citas, setCitas] = useState<Cita[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     confirmadas: 0,
@@ -117,8 +118,9 @@ export default function AdminPage() {
   };
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     await logout();
-    router.push("/login");
+    router.push("/");
   };
 
   const getStateBadge = (state: string) => {
@@ -179,6 +181,13 @@ export default function AdminPage() {
               Bienvenido, {user?.nombre} {user?.apellido}
             </p>
           </div>
+          <Button
+            onClick={() => router.push("/admin/pacientes")}
+            className="bg-[#52a2b2] hover:bg-[#458a98]"
+          >
+            <UserSearch className="w-4 h-4 mr-2" />
+            Historial de Pacientes
+          </Button>
         </div>
 
         {/* Stats */}

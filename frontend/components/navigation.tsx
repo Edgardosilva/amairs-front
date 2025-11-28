@@ -22,6 +22,7 @@ const authenticatedLinks: NavLink[] = [
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const user = useFormStore(selectUser)
   const isAuthenticated = useFormStore(selectIsAuthenticated)
   const { isAdmin } = useAuthStore()
@@ -29,12 +30,14 @@ export function Navigation() {
   const router = useRouter()
 
   const handleLogout = async () => {
+    setIsLoggingOut(true)
     logout()
     
     // Limpiar la cookie del servidor
     await fetch("/api/logout", { method: "POST" })
     
     router.push("/")
+    setIsLoggingOut(false)
   }
 
   return (
@@ -95,9 +98,19 @@ export function Navigation() {
                   variant="outline" 
                   size="lg"
                   className="gap-2"
+                  disabled={isLoggingOut}
                 >
-                  <LogOut size={16} />
-                  Cerrar Sesión
+                  {isLoggingOut ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+                      Cerrando...
+                    </>
+                  ) : (
+                    <>
+                      <LogOut size={16} />
+                      Cerrar Sesión
+                    </>
+                  )}
                 </Button>
               </div>
             ) : (
@@ -163,9 +176,19 @@ export function Navigation() {
                     }} 
                     variant="outline" 
                     className="w-full gap-2"
+                    disabled={isLoggingOut}
                   >
-                    <LogOut size={16} />
-                    Cerrar Sesión
+                    {isLoggingOut ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+                        Cerrando...
+                      </>
+                    ) : (
+                      <>
+                        <LogOut size={16} />
+                        Cerrar Sesión
+                      </>
+                    )}
                   </Button>
                 </>
               ) : (
