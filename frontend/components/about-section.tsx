@@ -1,4 +1,5 @@
 import { CheckCircle } from "lucide-react"
+import Image from "next/image"
 
 const benefits = [
   "Profesionales certificados y especializados",
@@ -32,7 +33,15 @@ export function AboutSection() {
           </div>
 
           <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
-            <img src="/modern-spa-wellness-center-interior.jpg" alt="Centro Amaris" className="w-full h-full object-cover" />
+            <Image 
+              src="/modern-spa-wellness-center-interior.jpg" 
+              alt="Centro Amaris - Instalaciones modernas" 
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+              quality={85}
+              priority={false}
+            />
           </div>
         </div>
       </div>
